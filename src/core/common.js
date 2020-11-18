@@ -3,7 +3,18 @@ import {random} from './utils';
 
 
 export function randomLocationShips(player) {
-    //player.board = [...CONFIG.BOARD];
+    player.board = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];
 
     for (let i = 1, length = CONFIG.SHIPS.length; i < length; i++) {
         const [decks, name] = CONFIG.SHIPS[i];
@@ -16,6 +27,8 @@ export function randomLocationShips(player) {
             createShip(player, coords);
         }
     }
+
+    player.hits = player.squadron.reduce((acc, decks) => acc += +decks, 0);
 }
 
 function getCoordinatesDecks(player, decks) {
@@ -87,8 +100,12 @@ function createShip(player, coords) {
     }
 
     player.squadron.push(coords.decks);
-    /*if (player.squadron.length === 10) {
-        console.log('ready!');
-    }*/
+}
+
+export function robotMove() {
+    const row = random(9);
+    const col = random(9);
+
+    return {row, col};
 }
 

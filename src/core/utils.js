@@ -1,50 +1,42 @@
 import {Container, Graphics, Loader, Text} from "pixi.js-legacy";
 import CONFIG from './config';
+import styles from './styles';
 
-const lineStyle = {
-    width: 1,
-    color: 0xffffff,
-    alpha: 0.5,
-}
-
-const textStyle = {
-    fontFamily: 'san-serif',
-    fontSize: 16,
-    fill: '#fff',
-}
+const grid = [];
+const cell = {};
 
 export function createBoard(width, height, offsetX = 0) {
     const board = new Container();
     board.position.set(CONFIG.PADDING.X + offsetX, CONFIG.PADDING.Y);
 
-    const cellWidth = ((width / 2) - CONFIG.PADDING.X * 2) / CONFIG.GRID_SIZE;
-    const cellHeight = (height - CONFIG.PADDING.Y * 2) / CONFIG.GRID_SIZE;
+    cell.width = ((width / 2) - CONFIG.PADDING.X * 2) / CONFIG.SIZE;
+    cell.height = (height - CONFIG.PADDING.Y * 2) / CONFIG.SIZE;
 
-    for (let i = 0; i <= CONFIG.GRID_SIZE; i++) {
+    for (let i = 0; i <= CONFIG.SIZE; i++) {
         // Линия
         const line = new Graphics();
-        line.lineStyle(lineStyle.width, lineStyle.color, lineStyle.alpha);
-        line.moveTo(0, i * cellHeight);
-        line.lineTo(width / 2 - CONFIG.PADDING.X * 2, i * cellHeight);
+        line.lineStyle(styles.line.width, styles.line.color, styles.line.alpha);
+        line.moveTo(0, i * cell.height);
+        line.lineTo(width / 2 - CONFIG.PADDING.X * 2, i * cell.height);
 
         // Цифра
-        const labelText = new Text(CONFIG.ROWS[i], textStyle);
-        labelText.position.set(-CONFIG.PADDING.Y / 2, i * cellHeight + cellHeight / 2);
+        const labelText = new Text(CONFIG.ROWS[i], styles.text);
+        labelText.position.set(-CONFIG.PADDING.Y / 2, i * cell.height + cell.height / 2);
         labelText.anchor.set(0.5);
 
         board.addChild(line, labelText);
     }
 
-    for (let i = 0; i <= CONFIG.GRID_SIZE; i++) {
+    for (let i = 0; i <= CONFIG.SIZE; i++) {
         // Линия
         const line = new Graphics();
-        line.lineStyle(lineStyle.width, lineStyle.color, lineStyle.alpha);
-        line.moveTo(i * cellWidth, 0);
-        line.lineTo(i * cellWidth, height - CONFIG.PADDING.Y * 2);
+        line.lineStyle(styles.line.width, styles.line.color, styles.line.alpha);
+        line.moveTo(i * cell.width, 0);
+        line.lineTo(i * cell.width, height - CONFIG.PADDING.Y * 2);
 
         // Буква
-        const labelText = new Text(CONFIG.COLS[i], textStyle);
-        labelText.position.set(i * cellWidth + cellWidth / 2, -CONFIG.PADDING.X / 2);
+        const labelText = new Text(CONFIG.COLS[i], styles.text);
+        labelText.position.set(i * cell.width + cell.width / 2, -CONFIG.PADDING.X / 2);
         labelText.anchor.set(0.5);
 
         board.addChild(line, labelText);
@@ -53,13 +45,15 @@ export function createBoard(width, height, offsetX = 0) {
     return board;
 }
 
-export function drawShips(board, size = 55) {
+export function drawShips(board, visible = true) {
     const ships = new Container();
     for (let row = 0; row < board.length; row++) {
         for (let col = 0; col < board[row].length; col++) {
             if (board[row][col]) {
-                const partShip = createPartShip(board[row][col], size);
-                partShip.position.set(size * col, size * row);
+                const partShip = createPartShip(board[row][col], cell.width);
+                partShip.position.set(cell.width * col, cell.width * row);
+                partShip.name = `row${row}:col${col}`;
+                partShip.visible = visible;
                 ships.addChild(partShip);
             }
         }
@@ -103,4 +97,45 @@ export function loadAssets(assets = {}) {
             });
         });
     });
+}
+
+export function randomPlayer(players) {
+    return players[random(1)];
+}
+
+export function pointToBoard(x, y) {
+    const grid = getGrid();
+    for (let row = 0; row < CONFIG.SIZE; row++) {
+        for (let col = 0; col < CONFIG.SIZE; col++) {
+            if (x > grid[row][col].x && x < grid[row][col].x + cell.width && y > grid[row][col].y && y < grid[row][col].y + cell.height) {
+                return {row, col};
+            }
+        }
+    }
+    return {};
+}
+
+export function initGrid() {
+    for (let row = 0; row < CONFIG.SIZE; row++) {
+        grid[row] = [];
+        for (let col = 0; col < CONFIG.SIZE; col++) {
+            grid[row][col] = {
+                x: col * cell.width,
+                y: row * cell.height,
+            };
+        }
+    }
+}
+
+function getGrid() {
+    return grid;
+}
+
+export function createMissPoint(row, col) {
+    const point = new Graphics();
+    point.beginFill(0xffffff, 1);
+    point.drawCircle(col * cell.width + cell.width / 2, row * cell.height + cell.height / 2, 5);
+    point.endFill();
+
+    return point;
 }
