@@ -18,8 +18,8 @@ gameNode.appendChild(game.view);
 let mover, waiter, currentPlayer, opponentPlayer, ships, leftBoard, rightBoard;
 
 const players = [
-    {id: 1, board: [], squadron: [], hits: 0, isRobot: 0},
-    {id: 2, board: [], squadron: [], hits: 0, isRobot: 1},
+    {id: 1, board: [], squadron: [], moves:[], hits: 0, isRobot: 0},
+    {id: 2, board: [], squadron: [], moves:[], hits: 0, isRobot: 1},
 ];
 
 const loader = loadAssets({'bg': bg});
@@ -54,36 +54,51 @@ loader.then(({loader, resources}) => {
     mover = randomPlayer(players);
     waiter = players.find(player => player.id !== mover.id);
 
+    game.ticker.add(checkMover);
+});
+
+function checkMover() {
+
     if (mover.isRobot) {
-        const {row, col} = robotMove();
+        const {row, col} = robotMove(mover.moves);
+        mover.moves.push({row, col});
 
         if (waiter.board[row][col]) {
             waiter.board[row][col] = 0;
             const deck = ships.getChildByName(`row${row}:col${col}`);
-            ships.removeChild(deck);
+            deck.visible = true;
         } else {
-            //[mover, waiter] = [waiter, mover];
+            const missPoint = createMissPoint(row, col);
+            leftBoard.addChild(missPoint);
+            [mover, waiter] = [waiter, mover];
         }
     }
-});
-
-
+}
 
 function fireHandler(event) {
+    if (currentPlayer !== mover) {
+        return false;
+    }
+
     const {x, y} = event.data.getLocalPosition(rightBoard);
     const {row, col} = pointToBoard(x, y);
 
-    if (opponentPlayer.board[row][col] > 0) {
-        const deck = rightBoard.children[44].getChildByName(`row${row}:col${col}`);
-        deck.removeChildren();
-        deck.visible = true;
-        //opponentPlayer.board[row][col] = 0;
-        opponentPlayer.hits--;
+    if (typeof row === 'undefined' || typeof col === 'undefined') {
+        return false;
+    }
 
-        /*console.log('ship hits:', opponentPlayer.board[row][col]);
-        if (opponentPlayer.board[row][col] === 0) {
-            alert('Ship is sunk!')
-        }*/
+    if (opponentPlayer.board[row][col]) {
+
+        const deck = rightBoard.children[44].getChildByName(`row${row}:col${col}`);
+        const ship = rightBoard.children[44].getChildByName(deck.shipName);
+        deck.visible = true;
+        opponentPlayer.board[row][col] = 0;
+        opponentPlayer.hits--;
+        ship.decks.length--;
+
+        if (!ship.decks.length) {
+            ship.visible = true;
+        }
 
         if (opponentPlayer.hits === 0) {
             alert('You win!')
@@ -92,6 +107,6 @@ function fireHandler(event) {
         const missPoint = createMissPoint(row, col);
         rightBoard.addChild(missPoint);
 
-        //[mover, waiter] = [waiter, mover];
+        [mover, waiter] = [waiter, mover];
     }
 }

@@ -1,5 +1,6 @@
 import CONFIG from './config';
 import {random} from './utils';
+import {Graphics} from "pixi.js-legacy";
 
 
 export function randomLocationShips(player) {
@@ -80,7 +81,7 @@ function checkLocationShip(x, y, kx, ky, decks, player) {
 
     for (let i = fromX; i < toX; i++) {
         for (let j = fromY; j < toY; j++) {
-            if (player.board[i][j] === 1) {
+            if (player.board[i][j] !== 0) {
                 return false;
             }
         }
@@ -96,15 +97,21 @@ function createShip(player, coords) {
         ky	= coords.ky;
 
     for (let k = 0; k < coords.decks; k++) {
-        player.board[x + k * kx][y + k * ky] = 1;
+        //player.board[x + k * kx][y + k * ky] = 1;
+        player.board[x + k * kx][y + k * ky] = {...coords};
     }
 
     player.squadron.push(coords.decks);
 }
 
-export function robotMove() {
+export function robotMove(moves) {
     const row = random(9);
     const col = random(9);
+
+    const move = moves.find(move => move.row === row && move.col === col);
+    if (move) {
+        return robotMove(moves);
+    }
 
     return {row, col};
 }

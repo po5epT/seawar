@@ -46,15 +46,42 @@ export function createBoard(width, height, offsetX = 0) {
 }
 
 export function drawShips(board, visible = true) {
+    const temp = [];
     const ships = new Container();
+    ships.sortableChildren = true;
     for (let row = 0; row < board.length; row++) {
         for (let col = 0; col < board[row].length; col++) {
             if (board[row][col]) {
-                const partShip = createPartShip(board[row][col], cell.width);
-                partShip.position.set(cell.width * col, cell.width * row);
-                partShip.name = `row${row}:col${col}`;
-                partShip.visible = visible;
-                ships.addChild(partShip);
+                const place = board[row][col];
+
+                const deck = createDeck(place, cell.width);
+                deck.position.set(cell.width * col, cell.width * row);
+                deck.name = `row${row}:col${col}`;
+                deck.shipName = place.shipname;
+                deck.visible = false;
+                ships.addChild(deck);
+
+                if (!temp.includes(place.shipname)) {
+                    const ship = new Graphics();
+                    ship.name = place.shipname;
+                    ship.decks = [];
+                    ship.decks.push(1)
+                    ship.zIndex = 1;
+                    ship.visible = visible;
+                    ship.lineStyle(3, 0x000000);
+                    ship.drawRect(
+                        cell.width * place.y,
+                        cell.height * place.x,
+                        cell.width + cell.width * place.ky * (place.decks - 1),
+                        cell.height + cell.height * place.kx * (place.decks - 1)
+                    );
+
+                    temp.push(place.shipname);
+                    ships.addChild(ship);
+                } else {
+                    const ship = ships.getChildByName(place.shipname);
+                    ship.decks.push(1);
+                }
             }
         }
     }
@@ -62,18 +89,12 @@ export function drawShips(board, visible = true) {
     return ships;
 }
 
-function createPartShip(part, size) {
+function createDeck(part, size) {
     const rect = new Graphics();
     rect.beginFill(0xffffff, 0.8);
+    rect.lineStyle(2, 0xffffff);
     rect.drawRect(0, 0, size, size);
     rect.endFill();
-
-    const deck = new Graphics();
-    deck.beginFill(0x000000, 0.7);
-    deck.drawCircle(size / 2, size / 2, size / 5);
-    deck.endFill();
-
-    rect.addChild(deck);
 
     return rect;
 }
