@@ -2,7 +2,16 @@ import {Application, Sprite, Rectangle, Graphics} from 'pixi.js-legacy';
 import CONFIG from './core/config';
 import bg from './images/bg.jpg';
 import './css/index.scss';
-import {createBoard, createMissPoint, drawShips, initGrid, loadAssets, pointToBoard, randomPlayer} from "./core/utils";
+import {
+    createBoard,
+    createHitPoint,
+    createMissPoint,
+    drawShips,
+    initGrid,
+    loadAssets,
+    pointToBoard,
+    randomPlayer
+} from "./core/utils";
 import {randomLocationShips, robotMove} from "./core/common";
 
 const gameNode = document.getElementById('game');
@@ -58,7 +67,6 @@ loader.then(({loader, resources}) => {
 });
 
 function checkMover() {
-
     if (mover.isRobot) {
         const {row, col} = robotMove(mover.moves);
         mover.moves.push({row, col});
@@ -66,7 +74,8 @@ function checkMover() {
         if (waiter.board[row][col]) {
             waiter.board[row][col] = 0;
             const deck = ships.getChildByName(`row${row}:col${col}`);
-            deck.visible = true;
+            const hitPoint = createHitPoint();
+            deck.addChild(hitPoint);
         } else {
             const missPoint = createMissPoint(row, col);
             leftBoard.addChild(missPoint);
@@ -87,11 +96,20 @@ function fireHandler(event) {
         return false;
     }
 
-    if (opponentPlayer.board[row][col]) {
+    const move = mover.moves.find(move => move.row === row && move.col === col);
+    if (move) {
+        return false;
+    }
 
+    mover.moves.push({row, col});
+
+    if (opponentPlayer.board[row][col]) {
         const deck = rightBoard.children[44].getChildByName(`row${row}:col${col}`);
         const ship = rightBoard.children[44].getChildByName(deck.shipName);
-        deck.visible = true;
+
+        const hitPoint = createHitPoint();
+        deck.addChild(hitPoint);
+
         opponentPlayer.board[row][col] = 0;
         opponentPlayer.hits--;
         ship.decks.length--;
@@ -101,7 +119,9 @@ function fireHandler(event) {
         }
 
         if (opponentPlayer.hits === 0) {
-            alert('You win!')
+            setTimeout(() => {
+                alert('You win!');
+            }, 500);
         }
     } else {
         const missPoint = createMissPoint(row, col);

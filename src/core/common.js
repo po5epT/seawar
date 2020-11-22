@@ -1,7 +1,5 @@
 import CONFIG from './config';
 import {random} from './utils';
-import {Graphics} from "pixi.js-legacy";
-
 
 export function randomLocationShips(player) {
     player.board = [
@@ -97,7 +95,6 @@ function createShip(player, coords) {
         ky	= coords.ky;
 
     for (let k = 0; k < coords.decks; k++) {
-        //player.board[x + k * kx][y + k * ky] = 1;
         player.board[x + k * kx][y + k * ky] = {...coords};
     }
 

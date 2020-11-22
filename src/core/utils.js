@@ -54,11 +54,10 @@ export function drawShips(board, visible = true) {
             if (board[row][col]) {
                 const place = board[row][col];
 
-                const deck = createDeck(place, cell.width);
+                const deck = createDeck();
                 deck.position.set(cell.width * col, cell.width * row);
                 deck.name = `row${row}:col${col}`;
                 deck.shipName = place.shipname;
-                deck.visible = false;
                 ships.addChild(deck);
 
                 if (!temp.includes(place.shipname)) {
@@ -69,12 +68,14 @@ export function drawShips(board, visible = true) {
                     ship.zIndex = 1;
                     ship.visible = visible;
                     ship.lineStyle(3, 0x000000);
+                    //ship.beginFill(0x000000, 0.3);
                     ship.drawRect(
                         cell.width * place.y,
                         cell.height * place.x,
                         cell.width + cell.width * place.ky * (place.decks - 1),
                         cell.height + cell.height * place.kx * (place.decks - 1)
                     );
+                    //ship.endFill();
 
                     temp.push(place.shipname);
                     ships.addChild(ship);
@@ -89,12 +90,9 @@ export function drawShips(board, visible = true) {
     return ships;
 }
 
-function createDeck(part, size) {
+function createDeck() {
     const rect = new Graphics();
-    rect.beginFill(0xffffff, 0.8);
-    rect.lineStyle(2, 0xffffff);
-    rect.drawRect(0, 0, size, size);
-    rect.endFill();
+    rect.drawRect(0, 0, cell.width, cell.height);
 
     return rect;
 }
@@ -159,4 +157,18 @@ export function createMissPoint(row, col) {
     point.endFill();
 
     return point;
+}
+
+export function createHitPoint() {
+    const width = 5;
+    const offset = 8;
+
+    const times = new Graphics();
+    times.lineStyle(width, 0xf13630, 0.8);
+    times.moveTo(offset, offset);
+    times.lineTo(cell.width - offset, cell.height - offset);
+    times.moveTo(offset, cell.height - offset);
+    times.lineTo(cell.width - offset, offset);
+
+    return times;
 }
