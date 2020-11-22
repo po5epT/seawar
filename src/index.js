@@ -24,7 +24,7 @@ const game = new Application({
 
 gameNode.appendChild(game.view);
 
-let mover, waiter, currentPlayer, opponentPlayer, ships, leftBoard, rightBoard;
+let mover, waiter, currentPlayer, opponentPlayer, ships, leftBoard, rightBoard, status = 0;
 
 const players = [
     {id: 1, board: [], squadron: [], moves:[], hits: 0, isRobot: 0},
@@ -60,6 +60,8 @@ loader.then(({loader, resources}) => {
         }
     });
 
+    status = 1;
+
     mover = randomPlayer(players);
     waiter = players.find(player => player.id !== mover.id);
 
@@ -85,7 +87,7 @@ function checkMover() {
 }
 
 function fireHandler(event) {
-    if (currentPlayer !== mover) {
+    if (currentPlayer !== mover || status === 0) {
         return false;
     }
 
@@ -120,6 +122,7 @@ function fireHandler(event) {
 
         if (opponentPlayer.hits === 0) {
             setTimeout(() => {
+                status = 0;
                 alert('You win!');
             }, 500);
         }
